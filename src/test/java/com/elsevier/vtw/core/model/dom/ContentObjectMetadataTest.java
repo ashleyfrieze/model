@@ -1,8 +1,8 @@
 package com.elsevier.vtw.core.model.dom;
 
-import com.elsevier.vtw.core.model.AssetMetadata;
-import com.elsevier.vtw.core.model.ContentObjectMetadata;
-import com.elsevier.vtw.core.model.GenerationMetadata;
+import com.elsevier.vtw.core.model.dom.AssetMetadata;
+import com.elsevier.vtw.core.model.dom.ContentObjectMetadata;
+import com.elsevier.vtw.core.model.dom.GenerationMetadata;
 import com.elsevier.vtw.core.model.dom.factory.ContentObjectMetadataFactory;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;

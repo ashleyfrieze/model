@@ -3,7 +3,7 @@ package com.elsevier.vtw.core.model.dom;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import com.elsevier.vtw.core.model.AssetMetadata;
+import com.elsevier.vtw.core.model.dom.AssetMetadata;
 import org.joda.time.DateTime;
 import org.junit.Test;
 

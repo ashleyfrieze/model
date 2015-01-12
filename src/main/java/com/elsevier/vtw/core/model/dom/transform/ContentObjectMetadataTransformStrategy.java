@@ -1,6 +1,6 @@
 package com.elsevier.vtw.core.model.dom.transform;
 
-import com.elsevier.vtw.core.model.ContentObjectMetadata;
+import com.elsevier.vtw.core.model.dom.ContentObjectMetadata;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public interface ContentObjectMetadataTransformStrategy {

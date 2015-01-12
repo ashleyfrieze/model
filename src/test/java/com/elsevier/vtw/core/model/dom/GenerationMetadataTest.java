@@ -1,6 +1,6 @@
 package com.elsevier.vtw.core.model.dom;
 
-import com.elsevier.vtw.core.model.GenerationMetadata;
+import com.elsevier.vtw.core.model.dom.GenerationMetadata;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;

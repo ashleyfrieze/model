@@ -2,7 +2,7 @@ package com.elsevier.vtw.core.model.dom.factory;
 
 import org.joda.time.DateTime;
 
-import com.elsevier.vtw.core.model.ContentObjectMetadata;
+import com.elsevier.vtw.core.model.dom.ContentObjectMetadata;
 
 public class ContentObjectMetadataFactory {
 	

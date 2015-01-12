@@ -1,6 +1,6 @@
 package com.elsevier.vtw.core.model.dom;
 
-import com.elsevier.vtw.core.model.ContentObjectMetadata;
+import com.elsevier.vtw.core.model.dom.ContentObjectMetadata;
 import org.joda.time.DateTime;
 
 public class AssetMetadata {

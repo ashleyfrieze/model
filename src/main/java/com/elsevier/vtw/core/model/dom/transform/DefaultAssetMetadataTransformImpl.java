@@ -1,11 +1,11 @@
 package com.elsevier.vtw.core.model.dom.transform;
 
-import com.elsevier.vtw.core.model.AssetMetadata;
-import com.elsevier.vtw.core.model.AssetMetadata.Builder;
+import com.elsevier.vtw.core.model.dom.AssetMetadata;
+import com.elsevier.vtw.core.model.dom.AssetMetadata.Builder;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.joda.time.DateTime;
 
-import static com.elsevier.vtw.common.JSONConstants.*;
+import static com.elsevier.vtw.core.model.dom.JSONConstants.*;
 
 public class DefaultAssetMetadataTransformImpl extends AbstractTransformImpl implements
 		AssetMetadataTransformStrategy {

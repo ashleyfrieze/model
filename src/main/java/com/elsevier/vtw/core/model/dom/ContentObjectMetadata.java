@@ -1,7 +1,7 @@
 package com.elsevier.vtw.core.model.dom;
 
-import com.elsevier.vtw.common.JSONConstants;
-import com.elsevier.vtw.core.model.GenerationMetadata;
+import com.elsevier.vtw.core.model.dom.JSONConstants;
+import com.elsevier.vtw.core.model.dom.GenerationMetadata;
 import com.elsevier.vtw.core.model.dom.transform.ContentObjectMetadataTransformStrategy;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.joda.time.DateTime;

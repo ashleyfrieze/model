@@ -1,10 +1,10 @@
 package com.elsevier.vtw.core.model.dom.transform;
 
-import com.elsevier.vtw.core.model.AssetMetadata;
-import com.elsevier.vtw.core.model.ContentObjectMetadata;
-import com.elsevier.vtw.core.model.ContentObjectMetadata.Builder;
-import com.elsevier.vtw.core.model.GenerationMetadata;
-import com.elsevier.vtw.framework.exception.VTWException;
+import com.elsevier.vtw.core.model.dom.AssetMetadata;
+import com.elsevier.vtw.core.model.dom.ContentObjectMetadata;
+import com.elsevier.vtw.core.model.dom.ContentObjectMetadata.Builder;
+import com.elsevier.vtw.core.model.dom.GenerationMetadata;
+import com.elsevier.vtw.core.model.dom.VTWException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,7 +12,7 @@ import org.joda.time.DateTime;
 
 import java.io.IOException;
 
-import static com.elsevier.vtw.common.JSONConstants.*;
+import static com.elsevier.vtw.core.model.dom.JSONConstants.*;
 
 /**
  * Default implementation of the ContentObjectMetadata Transformer.

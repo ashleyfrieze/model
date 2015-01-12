@@ -1,10 +1,10 @@
 package com.elsevier.vtw.core.model.dom.transform;
 
-import com.elsevier.vtw.core.model.GenerationMetadata;
+import com.elsevier.vtw.core.model.dom.GenerationMetadata;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import static com.elsevier.vtw.common.JSONConstants.*;
+import static com.elsevier.vtw.core.model.dom.JSONConstants.*;
 
 public class DefaultGenMetadataTransformImpl extends AbstractTransformImpl implements
 		GenerationMetadataTransformStrategy {
@@ -36,6 +36,10 @@ public class DefaultGenMetadataTransformImpl extends AbstractTransformImpl imple
 		builder.isGenerationOf(safeString(node, BAM_IS_GENERATION_OF));
 		builder.stage(safeString(node, BAM_STAGE));
 		builder.classificationLevel(safeString(node, BAM_CLASSIFICATION_LEVEL));
+		for(String asset:safeStringArray(node, BAM_HAS_ASSET)) {
+			builder.withAsset(asset);
+		}
+		
 
 		return builder.build();
 

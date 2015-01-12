@@ -27,6 +27,19 @@ abstract public class AbstractTransformImpl {
 		return node.textValue();
 	}
 	
+	protected static String[] safeStringArray(ObjectNode jsonValue, String fieldName) {
+		JsonNode node = jsonValue.findValue(fieldName);
+		if (node == null || !node.isArray()) {
+			return new String[0];
+		}
+		
+		String[] result = new String[node.size()];
+		for(int i=0; i<node.size(); i++) {
+			result[i] = node.get(i).textValue();
+		}
+		return result;
+	}
+	
 	protected Integer safeInt(ObjectNode jsonValue, String fieldName) {
 		IntNode node = (IntNode) jsonValue.findValue(fieldName);
 		if (node == null) {
