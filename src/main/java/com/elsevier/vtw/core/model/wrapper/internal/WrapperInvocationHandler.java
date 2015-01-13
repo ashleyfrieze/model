@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joda.time.DateTime;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -34,6 +36,11 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		String fieldName;
 		boolean isGetter;
 		boolean isSetter;
+		Class<?> propertyType;
+		
+		boolean isProperty() {
+			return isGetter || isSetter;
+		}
 	}
 	
 	/**
@@ -62,11 +69,15 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	private HandlingStrategy findInvocationStrategy(Method method) throws Throwable {
 		InvocationDefinition definition = getInvocationDefinition(method);
 		if (definition!=null) {
-			if (definition.isGetter) {
-				return createStringGetter(definition.fieldName);
-			} else if (definition.isSetter) {
-				return createStringSetter(definition.fieldName);
+			if (definition.isProperty()){
+				Property property = createProperty(definition);
+				if (definition.isGetter) {
+					return createGettingStrategy(property);
+				} else if (definition.isSetter) {
+					return createSettingStrategy(property);
+				}
 			}
+
 		}
 		
 		return null;
@@ -94,6 +105,12 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			def.fieldName = annotation.value();
 			def.isGetter = method.getName().startsWith(GETTER_PREFIX);
 			def.isSetter = method.getName().startsWith(SETTER_PREFIX);
+			if (def.isGetter) {
+				def.propertyType = method.getReturnType();
+			}
+			if (def.isSetter){
+				def.propertyType = method.getParameterTypes()[0];
+			}
 			return def;
 		}
 		return null;
@@ -137,23 +154,35 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		return null;
 	}
 
-	private HandlingStrategy createStringGetter(final String fieldName) {
+
+
+	private HandlingStrategy createGettingStrategy(final Property property) {
 		return new HandlingStrategy() {
 			@Override
 			public Object handle(Object[] parameters) {
-				return new StringProperty(fieldName, jsonData).get();
+				return property.get();
+			}
+		};
+	}
+
+	private HandlingStrategy createSettingStrategy(final Property property) {
+		return new HandlingStrategy() {
+			@Override
+			public Object handle(Object[] parameters) {
+				property.set(parameters[0]);
+				return null;
 			}
 		};
 	}
 	
-	private HandlingStrategy createStringSetter(final String fieldName) {
-		return new HandlingStrategy() {
-			@Override
-			public Object handle(Object[] parameters) {
-				new StringProperty(fieldName, jsonData).set((String)parameters[0]);
-				return null;
-			}
-		};
+
+	private Property createProperty(InvocationDefinition definition) {
+		if (definition.propertyType.equals(String.class)) {
+			return new StringProperty(definition.fieldName, jsonData);
+		} else if (definition.propertyType.equals(DateTime.class)){
+			return new DateTimeProperty(definition.fieldName, jsonData);
+		}
+		throw new UnsupportedOperationException("Cannot deal with property of type " + definition.propertyType.getCanonicalName());
 	}
 
 }

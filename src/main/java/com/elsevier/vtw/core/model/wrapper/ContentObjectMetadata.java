@@ -1,5 +1,7 @@
 package com.elsevier.vtw.core.model.wrapper;
 
+import org.joda.time.DateTime;
+
 import com.elsevier.vtw.core.model.wrapper.internal.Field;
 import com.elsevier.vtw.core.model.wrapper.internal.Wrapper;
 
@@ -17,4 +19,12 @@ public interface ContentObjectMetadata extends Wrapper {
 	@Field(DCT_TITLE)
 	String getTitle();
 	void setTitle(String title);
+	
+	@Field(DCT_DATE)
+	String getDateAsString();
+	void setDateAsString(String date);
+	
+	@Field(DCT_DATE)
+	DateTime getDate();
+	void setDate(DateTime date);
 }
