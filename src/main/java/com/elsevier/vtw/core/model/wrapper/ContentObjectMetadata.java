@@ -28,3 +28,4 @@ public interface ContentObjectMetadata extends Wrapper {
 	DateTime getDate();
 	void setDate(DateTime date);
 }
+

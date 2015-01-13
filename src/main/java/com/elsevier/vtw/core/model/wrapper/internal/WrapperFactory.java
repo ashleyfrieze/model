@@ -18,4 +18,9 @@ public class WrapperFactory {
 		return (T)Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, handler);
 	}
 
+	// for internal use only where runtime type information is all that can be used
+	protected static Object createUnchecked(@SuppressWarnings("rawtypes") Class type, ObjectNode root) {
+		WrapperInvocationHandler<Object> handler = new WrapperInvocationHandler<Object>(type, root);
+		return Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, handler);
+	}
 }

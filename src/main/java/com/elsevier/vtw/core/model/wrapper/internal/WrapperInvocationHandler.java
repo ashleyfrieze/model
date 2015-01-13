@@ -2,6 +2,7 @@ package com.elsevier.vtw.core.model.wrapper.internal;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		boolean isGetter;
 		boolean isSetter;
 		Class<?> propertyType;
+		Class<?> propertyGenericType;
 		
 		boolean isProperty() {
 			return isGetter || isSetter;
@@ -107,13 +109,33 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			def.isSetter = method.getName().startsWith(SETTER_PREFIX);
 			if (def.isGetter) {
 				def.propertyType = method.getReturnType();
+				def.propertyGenericType = getGenericTypeFrom(method.getGenericReturnType());
 			}
 			if (def.isSetter){
 				def.propertyType = method.getParameterTypes()[0];
+				def.propertyGenericType = getGenericTypeFrom(method.getGenericParameterTypes()[0]);
 			}
 			return def;
 		}
 		return null;
+	}
+
+	private Class<?> getGenericTypeFrom(Type genericType) {
+		// Note: this is an awful hack but appears to work
+		String typeName = lastItemFrom(genericType.toString().split("[<>]"));
+		try {
+			return Class.forName(typeName);
+		} catch (ClassNotFoundException e) {
+			// no generic type found
+			return null;
+		}
+	}
+
+	private String lastItemFrom(String[] array) {
+		if (array.length == 0) {
+			return "";
+		}
+		return array[array.length-1];
 	}
 
 	/**
@@ -183,6 +205,8 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			return new DateTimeProperty(definition.fieldName, jsonData);
 		} else if (Wrapper.class.isAssignableFrom(definition.propertyType)) {
 			return new WrapperProperty(definition.propertyType, definition.fieldName, jsonData);
+		} else if (definition.propertyType.equals(ArrayWrapper.class)) {
+			return new ArrayWrapperProperty(definition.propertyGenericType, definition.fieldName, jsonData);
 		}
 		throw new UnsupportedOperationException("Cannot deal with property of type " + definition.propertyType.getCanonicalName());
 	}

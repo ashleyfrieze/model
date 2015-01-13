@@ -2,10 +2,15 @@ package com.elsevier.vtw.core.model.wrapper;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+
 import org.joda.time.DateTime;
 import org.junit.Test;
 
+import com.elsevier.vtw.core.model.wrapper.internal.ArrayWrapper;
 import com.elsevier.vtw.core.model.wrapper.internal.WrapperFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -100,6 +105,84 @@ public class WrapperTest {
 
 		assertTrue(parent.json().toString().contains("\"dct:title\":\"Bingo\""));
 		assertTrue(parent.json().toString().contains("\"@id\":\"parentId\""));
+	}
+	
+	@Test
+	public void readStringArray() throws JsonProcessingException, IOException {
+		Parent parent = createCompoundTestObjectFromJson();
+		assertThat(parent.getId(), is("myId"));
+		
+		assertThat(parent.getStringArray().size(), is(3));
+		assertThat(parent.getStringArray().get(0), is("a"));
+		assertThat(parent.getStringArray().get(1), is("b"));
+		assertThat(parent.getStringArray().get(2), is("c"));
+	}
+	
+	@Test
+	public void readNullStringArrayResultsInNullReturn() {
+		Parent parent = WrapperFactory.create(Parent.class);
+		assertNull(parent.getStringArray());
+	}
+	
+	@Test
+	public void canSetStringArrayContents() {
+		// start off with no string array
+		Parent parent = WrapperFactory.create(Parent.class);
+		assertNull(parent.getStringArray());
+		
+		// make a new one
+		ArrayWrapper<String> newArray = new ArrayWrapper<String>(String.class);
+		newArray.add("myString");
+		
+		parent.setStringArray(newArray);
+		
+		// and now the string array is not null and has a value in it
+		assertNotNull(parent.getStringArray());
+		assertThat(parent.getStringArray().get(0), is("myString"));
+		
+		// and it's in the json
+		assertTrue(parent.json().toString().contains("myString"));
+	}
+	
+	@Test
+	public void canWriteStringArrayValues() throws JsonProcessingException, IOException {
+		Parent parent = createCompoundTestObjectFromJson();
+		
+		assertThat(parent.getStringArray().get(0), is("a"));
+		
+		// setter
+		parent.getStringArray().set(0, "99 red balloons");
+		
+		assertThat(parent.getStringArray().get(0), is("99 red balloons"));
+	}
+	
+	@Test
+	public void attachArrayWithOneObjectIn() {
+		AssetMetadata asset = WrapperFactory.create(AssetMetadata.class);
+		asset.setTitle("This is an asset");
+		
+		Parent parent = WrapperFactory.create(Parent.class);
+		
+		ArrayWrapper<AssetMetadata> assetArray = new ArrayWrapper<>(AssetMetadata.class);
+		assetArray.add(asset);
+		
+		parent.setAssetArray(assetArray);
+		
+		// the json should now contain the title
+		assertTrue(parent.json().toString().contains("is an asset"));
+		
+		// the title should be navigable
+		assertThat(parent.getAssetArray().get(0).getTitle(), is("This is an asset"));
+	}
+
+	private Parent createCompoundTestObjectFromJson() throws IOException,
+			JsonProcessingException {
+		String json = "{\"@id\":\"myId\",\"stringarray\":[\"a\",\"b\",\"c\"]}";
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode tree = (ObjectNode)mapper.readTree(json);
+		
+		Parent parent = WrapperFactory.create(Parent.class, tree);
+		return parent;
 	}
 	
 }
