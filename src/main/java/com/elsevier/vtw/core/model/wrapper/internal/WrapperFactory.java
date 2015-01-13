@@ -14,7 +14,7 @@ public class WrapperFactory {
 	
 	@SuppressWarnings("unchecked")
 	public static<T extends Wrapper> T create(Class<T> type, ObjectNode root) {
-		WrapperInvocationHandler handler = new WrapperInvocationHandler(root);
+		WrapperInvocationHandler<T> handler = new WrapperInvocationHandler<T>(type, root);
 		return (T)Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, handler);
 	}
 
