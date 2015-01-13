@@ -13,7 +13,7 @@ public class WrapperTest {
 	@Test
 	public void writeId() {
 		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
-		contentObject.id().set("myId");
+		contentObject.setId("myId");
 		
 		ObjectNode jsonNode = contentObject.json();
 		assertTrue(jsonNode.toString().contains("\"@id\":\"myId\""));
@@ -23,20 +23,20 @@ public class WrapperTest {
 	public void readWriteId() {
 		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
 		
-		contentObject.id().set("myId");
+		contentObject.setId("myId");
 		
-		assertThat(contentObject.id().get(), is("myId"));
+		assertThat(contentObject.getId(), is("myId"));
 	}
 	
 	@Test
 	public void roundTripSomeValues() {
 		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
-		contentObject.id().set("myId");
-		contentObject.ecmIdentifier().set("ecmID");
-		contentObject.title().set("title");
+		contentObject.setId("myId");
+		contentObject.setEcmIdentifier("ecmID");
+		contentObject.setTitle("title");
 		
-		assertThat(contentObject.id().get(), is("myId"));
-		assertThat(contentObject.ecmIdentifier().get(), is("ecmID"));
-		assertThat(contentObject.title().get(), is("title"));
+		assertThat(contentObject.getId(), is("myId"));
+		assertThat(contentObject.getEcmIdentifier(), is("ecmID"));
+		assertThat(contentObject.getTitle(), is("title"));
 	}
 }

@@ -3,7 +3,6 @@ package com.elsevier.vtw.core.model.wrapper.internal;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-import com.elsevier.vtw.core.model.wrapper.ContentObjectMetadata;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -37,15 +36,33 @@ public class WrapperInvocationHandler implements InvocationHandler {
 		if (arg1.isAnnotationPresent(Field.class)) {
 			final String fieldName = arg1.getAnnotation(Field.class).value();
 
-			return new HandlingStrategy() {
-				@Override
-				public Object handle(Object[] parameters) {
-					return new StringProperty(fieldName, jsonData);
-				}
-			};
+			if (arg1.getName().startsWith("get")) {
+				return createStringGetter(fieldName);
+			} else if (arg1.getName().startsWith("set")) {
+				return createStringSetter(fieldName);
+			}
 		}
 		
 		return null;
+	}
+
+	private HandlingStrategy createStringGetter(final String fieldName) {
+		return new HandlingStrategy() {
+			@Override
+			public Object handle(Object[] parameters) {
+				return new StringProperty(fieldName, jsonData).get();
+			}
+		};
+	}
+	
+	private HandlingStrategy createStringSetter(final String fieldName) {
+		return new HandlingStrategy() {
+			@Override
+			public Object handle(Object[] parameters) {
+				new StringProperty(fieldName, jsonData).set((String)parameters[0]);
+				return null;
+			}
+		};
 	}
 
 }
