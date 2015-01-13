@@ -177,12 +177,24 @@ public class WrapperTest {
 
 	private Parent createCompoundTestObjectFromJson() throws IOException,
 			JsonProcessingException {
-		String json = "{\"@id\":\"myId\",\"stringarray\":[\"a\",\"b\",\"c\"]}";
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode tree = (ObjectNode)mapper.readTree(json);
-		
+		ObjectNode tree = treeFromJson("{\"@id\":\"myId\",\"stringarray\":[\"a\",\"b\",\"c\"]}");		
 		Parent parent = WrapperFactory.create(Parent.class, tree);
 		return parent;
 	}
 	
+	private ObjectNode treeFromJson(String json) throws JsonProcessingException, IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode tree = (ObjectNode)mapper.readTree(json);
+		return tree;
+	}
+
+	@Test
+	public void canPretendPropertiesInRootAreSubObject() throws JsonProcessingException, IOException {
+		String json = "{\"first\":\"Bill\", \"last\":\"Benson\", \"gender\":\"male\"}";
+		Person person = WrapperFactory.create(Person.class, treeFromJson(json));
+		
+		assertThat(person.getFirstAndLastName().getFirstName(), is("Bill"));
+		assertThat(person.getFirstAndLastName().getLastName(), is("Benson"));
+		assertThat(person.getGender(), is("male"));
+	}
 }

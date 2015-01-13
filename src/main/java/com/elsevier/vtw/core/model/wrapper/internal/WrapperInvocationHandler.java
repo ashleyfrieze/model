@@ -1,5 +1,6 @@
 package com.elsevier.vtw.core.model.wrapper.internal;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -34,9 +35,17 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	 * Instructions on what a given method means in terms of choosing invocation strategy
 	 */
 	static class InvocationDefinition {
+		// a request to wrap as a sub object properties of the parent
+		boolean isNormalised;
+		
+		// the field name in the parent that is being turned into a property
 		String fieldName;
+		
+		// is the method a getter/setter
 		boolean isGetter;
 		boolean isSetter;
+		
+		// what type and generic type does this invocation trade in for get/set
 		Class<?> propertyType;
 		Class<?> propertyGenericType;
 		
@@ -101,10 +110,12 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	}
 
 	private InvocationDefinition buildInvocationDefinition(Method method) {
-		Field annotation = getFieldAnnotation(method);
-		if(annotation!=null) {
+		Field fieldAnnotation = getAnnotation(Field.class, method);
+		Normalised normalisedAnnotation = getAnnotation(Normalised.class, method);
+		if(fieldAnnotation !=null || normalisedAnnotation!=null) {
 			InvocationDefinition def = new InvocationDefinition();
-			def.fieldName = annotation.value();
+			def.isNormalised = normalisedAnnotation!=null;
+			def.fieldName = fieldAnnotation!=null ? fieldAnnotation.value() : null;
 			def.isGetter = method.getName().startsWith(GETTER_PREFIX);
 			def.isSetter = method.getName().startsWith(SETTER_PREFIX);
 			if (def.isGetter) {
@@ -139,38 +150,38 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	}
 
 	/**
-	 * Find the {link:Field} annotation on this method or its sibling if a getter/setter
+	 * Find the annotation on this method or its sibling if a getter/setter
 	 * @param method the method to review
-	 * @return {link:Field} annotation from this method, if available, or its sibling if not
+	 * @return annotation from this method, if available, or its sibling if not
 	 */
-	private Field getFieldAnnotation(Method method) {
-		Field field = getFieldAnnotationFrom(method);
-		if (field!=null) {
-			return field;
+	private <T extends Annotation> T getAnnotation(Class<T> annotationType, Method method) {
+		T annotation = getAnnotationFrom(annotationType, method);
+		if (annotation!=null) {
+			return annotation;
 		}
 		
 		// perhaps this is a getter/setter where the other one has the
 		// annotation
 		if (method.getName().startsWith(GETTER_PREFIX)) {
-			return getFieldAnnotationForRePrefixed(method, SETTER_PREFIX);
+			return getAnnotationForRePrefixed(annotationType, method, SETTER_PREFIX);
 		}
 		if (method.getName().startsWith(SETTER_PREFIX)) {
-			return getFieldAnnotationForRePrefixed(method, GETTER_PREFIX);
+			return getAnnotationForRePrefixed(annotationType, method, GETTER_PREFIX);
 		}
 		
 		return null;
 	}
 
-	private Field getFieldAnnotationFrom(Method method) {
-		return method.getAnnotation(Field.class);
+	private <T extends Annotation> T getAnnotationFrom(Class<T> annotationType, Method method) {
+		return method.getAnnotation(annotationType);
 	}
 
-	private Field getFieldAnnotationForRePrefixed(Method method, String otherPrefix) {
+	private <T extends Annotation> T getAnnotationForRePrefixed(Class<T> annotationType, Method method, String otherPrefix) {
 		Method[] methods = wrappedType.getMethods();
 		String newName = otherPrefix + method.getName().substring(SETTER_PREFIX.length());
 		for(Method possibleMatch:methods) {
 			if (possibleMatch.getName().equals(newName)) {
-				return getFieldAnnotationFrom(possibleMatch);
+				return getAnnotationFrom(annotationType, possibleMatch);
 			}
 		}
 		return null;
@@ -204,11 +215,22 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		} else if (definition.propertyType.equals(DateTime.class)){
 			return new DateTimeProperty(definition.fieldName, jsonData);
 		} else if (Wrapper.class.isAssignableFrom(definition.propertyType)) {
-			return new WrapperProperty(definition.propertyType, definition.fieldName, jsonData);
+			return createWrapperProperty(definition);
 		} else if (definition.propertyType.equals(ArrayWrapper.class)) {
 			return new ArrayWrapperProperty(definition.propertyGenericType, definition.fieldName, jsonData);
 		}
 		throw new UnsupportedOperationException("Cannot deal with property of type " + definition.propertyType.getCanonicalName());
+	}
+
+	private Property createWrapperProperty(InvocationDefinition definition) {
+		if (definition.isNormalised) {
+			if (definition.isSetter) {
+				throw new UnsupportedOperationException("Cannot set a normalised sub object");
+			}
+			return new NormalisingWrapperProperty(definition.propertyType, jsonData);
+		} else {
+			return new WrapperProperty(definition.propertyType, definition.fieldName, jsonData);
+		}
 	}
 
 }
