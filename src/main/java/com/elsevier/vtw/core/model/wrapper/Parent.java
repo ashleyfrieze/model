@@ -7,4 +7,5 @@ import com.elsevier.vtw.core.model.wrapper.internal.Field;
 public interface Parent extends ContentObjectMetadata {
 	@Field(BAM_ASSET_METADATA)
 	AssetMetadata getAssetMetadata();
+	void setAssetMetadata(AssetMetadata assetMetadata);
 }

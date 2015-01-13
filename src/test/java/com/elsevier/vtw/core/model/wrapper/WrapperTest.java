@@ -68,5 +68,38 @@ public class WrapperTest {
 		assertThat(contentObject.getDate(), is(TEST_CO_DATE_TIME));
 	}
 	
+	@Test
+	public void defaultValueOfEmbeddedObjectIsNull() {
+		Parent parent = WrapperFactory.create(Parent.class);
+		
+		assertNull(parent.getAssetMetadata());
+	}
+	
+	@Test
+	public void addEmbeddedObjectToParent() {
+		Parent parent = WrapperFactory.create(Parent.class);
+		parent.setAssetMetadata(WrapperFactory.create(AssetMetadata.class));
+		
+		assertNotNull(parent.getAssetMetadata());
+	}
+	
+	@Test
+	public void addEmbeddedObjectToParentAndRoundtripValuesInIt() {
+		Parent parent = WrapperFactory.create(Parent.class);
+		AssetMetadata asset = WrapperFactory.create(AssetMetadata.class);
+		parent.setAssetMetadata(asset);
+		
+		asset.setTitle("Jingo");
+		asset.setId("assetId");
+		
+		parent.setTitle("Bingo");
+		parent.setId("parentId");
+		
+		assertTrue(parent.json().toString().contains("\"dct:title\":\"Jingo\""));
+		assertTrue(parent.json().toString().contains("\"@id\":\"assetId\""));
+
+		assertTrue(parent.json().toString().contains("\"dct:title\":\"Bingo\""));
+		assertTrue(parent.json().toString().contains("\"@id\":\"parentId\""));
+	}
 	
 }

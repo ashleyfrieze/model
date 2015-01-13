@@ -181,6 +181,8 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			return new StringProperty(definition.fieldName, jsonData);
 		} else if (definition.propertyType.equals(DateTime.class)){
 			return new DateTimeProperty(definition.fieldName, jsonData);
+		} else if (Wrapper.class.isAssignableFrom(definition.propertyType)) {
+			return new WrapperProperty(definition.propertyType, definition.fieldName, jsonData);
 		}
 		throw new UnsupportedOperationException("Cannot deal with property of type " + definition.propertyType.getCanonicalName());
 	}
