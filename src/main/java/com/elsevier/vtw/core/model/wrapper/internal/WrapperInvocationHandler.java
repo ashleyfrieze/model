@@ -30,30 +30,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	interface HandlingStrategy {
 		Object handle(Object[] parameters);
 	}
-	
-	/**
-	 * Instructions on what a given method means in terms of choosing invocation strategy
-	 */
-	static class InvocationDefinition {
-		// a request to wrap as a sub object properties of the parent
-		boolean isNormalised;
-		
-		// the field name in the parent that is being turned into a property
-		String fieldName;
-		
-		// is the method a getter/setter
-		boolean isGetter;
-		boolean isSetter;
-		
-		// what type and generic type does this invocation trade in for get/set
-		Class<?> propertyType;
-		Class<?> propertyGenericType;
-		
-		boolean isProperty() {
-			return isGetter || isSetter;
-		}
-	}
-	
+
 	/**
 	 * Constructor
 	 * @param wrappedType the type that is being proxied
@@ -115,7 +92,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		if(fieldAnnotation !=null || normalisedAnnotation!=null) {
 			InvocationDefinition def = new InvocationDefinition();
 			def.isNormalised = normalisedAnnotation!=null;
-			def.fieldName = jsonFieldNameFrom(fieldAnnotation, method);
+			def.fieldPath = jsonFieldPathFrom(fieldAnnotation, method);
 			def.isGetter = method.getName().startsWith(GETTER_PREFIX);
 			def.isSetter = method.getName().startsWith(SETTER_PREFIX);
 			if (def.isGetter) {
@@ -131,8 +108,14 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		return null;
 	}
 
-	private String jsonFieldNameFrom(Field fieldAnnotation, Method method) {
-		String name = fieldAnnotation!=null ? fieldAnnotation.value() : null;
+	private String[] jsonFieldPathFrom(Field fieldAnnotation, Method method) {
+		String name = null;
+		if (fieldAnnotation!=null) {
+			if (fieldAnnotation.path().length>0) {
+				return fieldAnnotation.path();
+			}
+			name=fieldAnnotation.value();
+		}
 		
 		if (name!=null && name.isEmpty()) {
 			// if we can't find the field name from the method, then we're in trouble
@@ -140,10 +123,10 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			if (propertyName==null) {
 				throw new UnsupportedOperationException("Cannot tag a non property with a Field attribute for inferring JSON field");
 			}
-			return propertyName;
+			return new String[]{propertyName};
 		}
 		
-		return name;
+		return new String[]{name};
 	}
 
 	private String propertyNameFrom(String methodName) {
@@ -236,14 +219,22 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	
 
 	private Property createProperty(InvocationDefinition definition) {
+		Property property = createPropertyForEndOfPath(definition);
+		if (definition.hasFieldPath()) {
+			return new PathProperty(jsonData, property, definition.getPath());
+		}
+		return property;
+	}
+
+	private Property createPropertyForEndOfPath(InvocationDefinition definition) {
 		if (definition.propertyType.equals(String.class)) {
-			return new StringProperty(definition.fieldName, jsonData);
+			return new StringProperty(definition.getFieldName(), jsonData);
 		} else if (definition.propertyType.equals(DateTime.class)){
-			return new DateTimeProperty(definition.fieldName, jsonData);
+			return new DateTimeProperty(definition.getFieldName(), jsonData);
 		} else if (Wrapper.class.isAssignableFrom(definition.propertyType)) {
 			return createWrapperProperty(definition);
 		} else if (definition.propertyType.equals(ArrayWrapper.class)) {
-			return new ArrayWrapperProperty(definition.propertyGenericType, definition.fieldName, jsonData);
+			return new ArrayWrapperProperty(definition.propertyGenericType, definition.getFieldName(), jsonData);
 		}
 		throw new UnsupportedOperationException("Cannot deal with property of type " + definition.propertyType.getCanonicalName());
 	}
@@ -255,7 +246,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			}
 			return new NormalisingWrapperProperty(definition.propertyType, jsonData);
 		} else {
-			return new WrapperProperty(definition.propertyType, definition.fieldName, jsonData);
+			return new WrapperProperty(definition.propertyType, definition.getFieldName(), jsonData);
 		}
 	}
 

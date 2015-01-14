@@ -25,6 +25,7 @@ public interface FlattenedPerson extends Wrapper {
 	String getGender();
 	void setGender(String gender);
 	
+	// these fields flatten the first and last object
 	@Field(path={"firstandlast","first"})
 	String getFirstName();
 	void setFirstName(String first);
@@ -32,4 +33,11 @@ public interface FlattenedPerson extends Wrapper {
 	@Field(path={"firstandlast","last"})
 	String getLastName();
 	void setLastName(String last);
+	
+	// yet the first and last object can also co-exist as a sub object
+	// in the interface - a handy side effect of wrapping
+	@Field("firstandlast")
+	FirstAndLastName getFirstAndLast();
+	void setFirstAndLast(FirstAndLastName firstAndLast);
+	
 }

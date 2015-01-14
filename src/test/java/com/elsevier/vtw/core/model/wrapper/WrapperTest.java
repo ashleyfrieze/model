@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 
 public class WrapperTest {
 	private static final String TEST_CO_DATE = "2014-11-10T12:10:55Z";
@@ -35,6 +35,13 @@ public class WrapperTest {
 		contentObject.setId("myId");
 		
 		assertThat(contentObject.getId(), is("myId"));
+	}
+	
+	@Test
+	public void readNullString() {
+		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
+		
+		assertNull(contentObject.getId());
 	}
 	
 	@Test
@@ -216,5 +223,34 @@ public class WrapperTest {
 		assertThat(person.getFirstAndLastName().getFirstName(), is("Bill"));
 		assertThat(person.getFirstAndLastName().getLastName(), is("Benson"));
 		assertThat(person.getGender(), is("male"));
+	}
+
+	@Test
+	public void gettingFlattenedProperties() {
+		FirstAndLastName firstAndLast = WrapperFactory.create(FirstAndLastName.class);
+		firstAndLast.setFirstName("Charlie");
+		firstAndLast.setLastName("Brown");
+
+		FlattenedPerson person = WrapperFactory.create(FlattenedPerson.class);
+		person.setFirstAndLast(firstAndLast);
+		
+		// demonstrate that the set of the nested object is visible to the flattened getters
+		assertThat(person.getFirstName(), is("Charlie"));
+		assertThat(person.getLastName(), is("Brown"));
+	}
+	
+	@Test
+	public void settingFlattenedProperties() {
+		FlattenedPerson person = WrapperFactory.create(FlattenedPerson.class);
+		person.setFirstName("Charlie");
+		person.setLastName("Brown");
+		
+		FirstAndLastName firstAndLast = person.getFirstAndLast();
+		
+		// demonstrate that the set applied to the nested object via either getter
+		assertThat(firstAndLast.getFirstName(), is("Charlie"));
+		assertThat(person.getFirstName(), is("Charlie"));
+		assertThat(firstAndLast.getLastName(), is("Brown"));
+		assertThat(person.getLastName(), is("Brown"));
 	}
 }

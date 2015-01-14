@@ -24,4 +24,10 @@ public class NormalisingWrapperProperty implements Property {
 		
 	}
 
+	@Override
+	public void updateJsonRoot(ObjectNode root) {
+		throw new UnsupportedOperationException("Cannot use normalisation with re-rooting");
+		
+	}
+
 }
