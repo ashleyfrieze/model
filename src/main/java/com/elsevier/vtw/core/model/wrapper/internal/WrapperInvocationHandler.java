@@ -115,7 +115,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		if(fieldAnnotation !=null || normalisedAnnotation!=null) {
 			InvocationDefinition def = new InvocationDefinition();
 			def.isNormalised = normalisedAnnotation!=null;
-			def.fieldName = fieldAnnotation!=null ? fieldAnnotation.value() : null;
+			def.fieldName = jsonFieldNameFrom(fieldAnnotation, method);
 			def.isGetter = method.getName().startsWith(GETTER_PREFIX);
 			def.isSetter = method.getName().startsWith(SETTER_PREFIX);
 			if (def.isGetter) {
@@ -127,6 +127,32 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 				def.propertyGenericType = getGenericTypeFrom(method.getGenericParameterTypes()[0]);
 			}
 			return def;
+		}
+		return null;
+	}
+
+	private String jsonFieldNameFrom(Field fieldAnnotation, Method method) {
+		String name = fieldAnnotation!=null ? fieldAnnotation.value() : null;
+		
+		if (name!=null && name.isEmpty()) {
+			// if we can't find the field name from the method, then we're in trouble
+			String propertyName = propertyNameFrom(method.getName());
+			if (propertyName==null) {
+				throw new UnsupportedOperationException("Cannot tag a non property with a Field attribute for inferring JSON field");
+			}
+			return propertyName;
+		}
+		
+		return name;
+	}
+
+	private String propertyNameFrom(String methodName) {
+		if (methodName.startsWith(SETTER_PREFIX) || methodName.startsWith(GETTER_PREFIX)) {
+			String propertyName = methodName.substring(SETTER_PREFIX.length());
+			if (propertyName.length()>0) {
+				String firstCharacter = propertyName.substring(0,1);
+				return firstCharacter.toLowerCase() + propertyName.substring(1);
+			}
 		}
 		return null;
 	}

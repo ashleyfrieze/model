@@ -74,6 +74,26 @@ public class WrapperTest {
 	}
 	
 	@Test
+	public void fieldNameCanBeInferred() {
+		AssetMetadata assetMetaData = WrapperFactory.create(AssetMetadata.class);
+		
+		assetMetaData.setInferredField("inferred");
+		assertThat(assetMetaData.getInferredField(), is("inferred"));
+		
+		assertTrue(assetMetaData.json().toString().contains("\"inferredField\":\"inferred\""));
+	}
+	
+	@Test
+	public void fieldNameCanBeInferredOneCharacterName() {
+		AssetMetadata assetMetaData = WrapperFactory.create(AssetMetadata.class);
+		
+		assetMetaData.setA("inferred");
+		assertThat(assetMetaData.getA(), is("inferred"));
+		
+		assertTrue(assetMetaData.json().toString().contains("\"a\":\"inferred\""));
+	}
+	
+	@Test
 	public void defaultValueOfEmbeddedObjectIsNull() {
 		Parent parent = WrapperFactory.create(Parent.class);
 		
@@ -191,7 +211,7 @@ public class WrapperTest {
 	@Test
 	public void canPretendPropertiesInRootAreSubObject() throws JsonProcessingException, IOException {
 		String json = "{\"first\":\"Bill\", \"last\":\"Benson\", \"gender\":\"male\"}";
-		Person person = WrapperFactory.create(Person.class, treeFromJson(json));
+		NormalisedPerson person = WrapperFactory.create(NormalisedPerson.class, treeFromJson(json));
 		
 		assertThat(person.getFirstAndLastName().getFirstName(), is("Bill"));
 		assertThat(person.getFirstAndLastName().getLastName(), is("Benson"));
