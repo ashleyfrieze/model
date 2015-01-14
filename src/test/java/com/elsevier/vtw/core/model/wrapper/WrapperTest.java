@@ -253,4 +253,24 @@ public class WrapperTest {
 		assertThat(firstAndLast.getLastName(), is("Brown"));
 		assertThat(person.getLastName(), is("Brown"));
 	}
+	
+	@Test
+	public void canFlattenADeepObject() {
+		FlattenADeepSubObject flatten = WrapperFactory.create(FlattenADeepSubObject.class);
+		
+		assertNull(flatten.getFirstAndLast());
+		
+		FirstAndLastName firstAndLast = WrapperFactory.create(FirstAndLastName.class);
+		firstAndLast.setFirstName("Boris");
+		firstAndLast.setLastName("Becker");
+		
+		flatten.setFirstAndLast(firstAndLast);
+		
+		// now test this worked
+		assertThat(flatten.getFirstAndLast().getFirstName(), is("Boris"));
+		assertThat(flatten.getFirstAndLast().getLastName(), is("Becker"));
+		
+		assertThat(flatten.json().toString(), is("{\"a\":{\"b\":{\"c\":{\"first\":\"Boris\",\"last\":\"Becker\"}}}}"));
+		
+	}
 }
