@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.joda.time.DateTime;
+import org.joda.time.base.AbstractDateTime;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -42,11 +43,11 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	}
 	
 	@Override
-	public Object invoke(Object arg0, Method method, Object[] arg2)
+	public Object invoke(Object object, Method method, Object[] parameters)
 			throws Throwable {
-		HandlingStrategy strategy = findInvocationStrategy(method);
+		HandlingStrategy strategy = findInvocationStrategy(object, method);
 		if (strategy!=null) {
-			return strategy.handle(arg2);
+			return strategy.handle(parameters);
 		} if (method.equals(Wrapper.class.getMethod("json"))) {
 			return jsonData;
 		} else {
@@ -54,7 +55,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		}
 	}
 
-	private HandlingStrategy findInvocationStrategy(Method method) throws Throwable {
+	private HandlingStrategy findInvocationStrategy(Object object, Method method) throws Throwable {
 		InvocationDefinition definition = getInvocationDefinition(method);
 		if (definition!=null) {
 			if (definition.isProperty()){
@@ -65,10 +66,58 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 					return createSettingStrategy(property);
 				}
 			}
+			if (definition.isComposite()) {
+				return createCompositeStrategy(object, definition);
+			}
 
 		}
 		
 		return null;
+	}
+
+	private HandlingStrategy createCompositeStrategy(Object object,
+			InvocationDefinition definition) {
+		if (definition.isGetter) {
+			return createCompositeGetterStrategy(object, definition);
+		} else if (definition.isSetter) {
+			return createCompositeSetterStrategy(object, definition);
+		}
+		return null;
+	}
+
+	private HandlingStrategy createCompositeGetterStrategy(final Object object,
+			final InvocationDefinition definition) {
+		return new HandlingStrategy() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public Object handle(Object[] parameters) {
+				return createHandler(definition).get(object);
+			}
+		};
+	}
+	
+	private HandlingStrategy createCompositeSetterStrategy(final Object object,
+			final InvocationDefinition definition) {
+		return new HandlingStrategy() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public Object handle(Object[] parameters) {
+				createHandler(definition).set(object, parameters[0]);
+				return null;
+			}
+		};
+	}
+	
+	
+	@SuppressWarnings("rawtypes")
+	private CompositeHandler createHandler(InvocationDefinition definition) {
+		try {
+			return (CompositeHandler)(definition.getCompositeHandlerClass().newInstance());
+		} catch (Exception e) {
+			throw new UnsupportedOperationException(e);
+		}
 	}
 
 	private InvocationDefinition getInvocationDefinition(Method method) {
@@ -89,7 +138,8 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	private InvocationDefinition buildInvocationDefinition(Method method) {
 		Field fieldAnnotation = getAnnotation(Field.class, method);
 		Normalised normalisedAnnotation = getAnnotation(Normalised.class, method);
-		if(fieldAnnotation !=null || normalisedAnnotation!=null) {
+		Composite compositeAnnotation = getAnnotation(Composite.class, method);
+		if(fieldAnnotation !=null || normalisedAnnotation!=null || compositeAnnotation!=null) {
 			InvocationDefinition def = new InvocationDefinition();
 			def.isNormalised = normalisedAnnotation!=null;
 			def.fieldPath = jsonFieldPathFrom(fieldAnnotation, method);
@@ -103,6 +153,8 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 				def.propertyType = method.getParameterTypes()[0];
 				def.propertyGenericType = getGenericTypeFrom(method.getGenericParameterTypes()[0]);
 			}
+			def.isComposite = compositeAnnotation != null;
+			def.compositeHandlerClass = compositeAnnotation != null ? compositeAnnotation.handler() : null;
 			return def;
 		}
 		return null;

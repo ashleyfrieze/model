@@ -271,6 +271,25 @@ public class WrapperTest {
 		assertThat(flatten.getFirstAndLast().getLastName(), is("Becker"));
 		
 		assertThat(flatten.json().toString(), is("{\"a\":{\"b\":{\"c\":{\"first\":\"Boris\",\"last\":\"Becker\"}}}}"));
+	}
+	
+	@Test
+	public void compositePropertyReadFromActualProperties() {
+		CompositeProperties obj = WrapperFactory.create(CompositeProperties.class);
 		
+		obj.setFirstName("Bill");
+		obj.setLastName("Bryson");
+		
+		assertThat(obj.getFullName(), is("Bill Bryson"));
+	}
+	
+	@Test
+	public void compositePropertyWritesToActualProperties() {
+		CompositeProperties obj = WrapperFactory.create(CompositeProperties.class);
+		
+		obj.setFullName("Bill Bailey");
+		
+		assertThat(obj.getFirstName(), is("Bill"));
+		assertThat(obj.getLastName(), is("Bailey"));
 	}
 }

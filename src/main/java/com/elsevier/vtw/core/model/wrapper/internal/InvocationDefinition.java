@@ -17,12 +17,17 @@ public class InvocationDefinition {
 	boolean isGetter;
 	boolean isSetter;
 	
+	boolean isComposite;
+	
 	// what type and generic type does this invocation trade in for get/set
 	Class<?> propertyType;
 	Class<?> propertyGenericType;
 	
+	@SuppressWarnings("rawtypes")
+	Class<? extends CompositeHandler> compositeHandlerClass;
+	
 	boolean isProperty() {
-		return isGetter || isSetter;
+		return (isGetter || isSetter) && !isComposite;
 	}
 
 	public boolean hasFieldPath() {
@@ -41,5 +46,14 @@ public class InvocationDefinition {
 	 */
 	public String getFieldName() {
 		return fieldPath!=null && fieldPath.length>0 ? fieldPath[fieldPath.length-1] : null;
+	}
+
+	public boolean isComposite() {
+		return isComposite;
+	}
+
+	@SuppressWarnings("rawtypes")
+	public Class<? extends CompositeHandler> getCompositeHandlerClass() {
+		return compositeHandlerClass;
 	}
 }
