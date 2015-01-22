@@ -8,6 +8,8 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 
 import com.elsevier.vtw.core.model.wrapper.internal.ArrayWrapper;
+import com.elsevier.vtw.core.model.wrapper.internal.Field;
+import com.elsevier.vtw.core.model.wrapper.internal.Wrapper;
 import com.elsevier.vtw.core.model.wrapper.internal.WrapperFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,10 +26,9 @@ public class WrapperTest {
 		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
 		contentObject.setId("myId");
 		
-		ObjectNode jsonNode = contentObject.json();
-		assertTrue(jsonNode.toString().contains("\"@id\":\"myId\""));
+		assertJsonHasProperty(contentObject,"@id","myId");
 	}
-	
+
 	@Test
 	public void readWriteId() {
 		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
@@ -87,7 +88,7 @@ public class WrapperTest {
 		assetMetaData.setInferredField("inferred");
 		assertThat(assetMetaData.getInferredField(), is("inferred"));
 		
-		assertTrue(assetMetaData.json().toString().contains("\"inferredField\":\"inferred\""));
+		assertJsonHasProperty(assetMetaData, "inferredField", "inferred");
 	}
 	
 	@Test
@@ -97,7 +98,7 @@ public class WrapperTest {
 		assetMetaData.setA("inferred");
 		assertThat(assetMetaData.getA(), is("inferred"));
 		
-		assertTrue(assetMetaData.json().toString().contains("\"a\":\"inferred\""));
+		assertJsonHasProperty(assetMetaData, "a", "inferred");
 	}
 	
 	@Test
@@ -127,11 +128,10 @@ public class WrapperTest {
 		parent.setTitle("Bingo");
 		parent.setId("parentId");
 		
-		assertTrue(parent.json().toString().contains("\"dct:title\":\"Jingo\""));
-		assertTrue(parent.json().toString().contains("\"@id\":\"assetId\""));
-
-		assertTrue(parent.json().toString().contains("\"dct:title\":\"Bingo\""));
-		assertTrue(parent.json().toString().contains("\"@id\":\"parentId\""));
+		assertJsonHasProperty(parent, "dct:title", "Jingo");
+		assertJsonHasProperty(parent, "@id", "assetId");
+		assertJsonHasProperty(parent, "dct:title", "Bingo");
+		assertJsonHasProperty(parent, "@id", "parentId");
 	}
 	
 	@Test
@@ -275,7 +275,7 @@ public class WrapperTest {
 	
 	@Test
 	public void compositePropertyReadFromActualProperties() {
-		CompositeProperties obj = WrapperFactory.create(CompositeProperties.class);
+		PresentedProperties obj = WrapperFactory.create(PresentedProperties.class);
 		
 		obj.setFirstName("Bill");
 		obj.setLastName("Bryson");
@@ -285,11 +285,46 @@ public class WrapperTest {
 	
 	@Test
 	public void compositePropertyWritesToActualProperties() {
-		CompositeProperties obj = WrapperFactory.create(CompositeProperties.class);
+		PresentedProperties obj = WrapperFactory.create(PresentedProperties.class);
 		
 		obj.setFullName("Bill Bailey");
 		
 		assertThat(obj.getFirstName(), is("Bill"));
 		assertThat(obj.getLastName(), is("Bailey"));
+	}
+	
+	interface NumberContainer extends Wrapper {
+		@Field
+		Integer getInteger();
+		void setInteger(Integer number);
+	}
+	
+	@Test
+	public void readWriteIntegerProperty() {
+		NumberContainer container = WrapperFactory.create(NumberContainer.class);
+		container.setInteger(123);
+
+		assertThat(container.getInteger(), is(123));
+		
+		assertJsonHas(container, "integer", 123);
+		
+	}
+	
+	/**
+	 * Quoted value
+	 */
+	private void assertJsonHasProperty(Wrapper wrapper, String name,
+			String value) {
+		ObjectNode jsonNode = wrapper.json();
+		assertTrue(jsonNode.toString().contains("\""+name+"\":\""+value+"\""));
+	}
+	
+	/**
+	 * Unquoted values
+	 */
+	private void assertJsonHas(Wrapper wrapper, String name,
+			Object value) {
+		ObjectNode jsonNode = wrapper.json();
+		assertTrue(jsonNode.toString().contains("\""+name+"\":"+value));
 	}
 }

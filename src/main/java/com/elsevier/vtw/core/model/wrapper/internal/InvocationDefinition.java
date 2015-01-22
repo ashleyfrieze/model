@@ -17,17 +17,17 @@ public class InvocationDefinition {
 	boolean isGetter;
 	boolean isSetter;
 	
-	boolean isComposite;
+	boolean isPresented;
 	
 	// what type and generic type does this invocation trade in for get/set
 	Class<?> propertyType;
 	Class<?> propertyGenericType;
 	
 	@SuppressWarnings("rawtypes")
-	Class<? extends CompositeHandler> compositeHandlerClass;
+	Class<? extends Presenter> presenterClass;
 	
 	boolean isProperty() {
-		return (isGetter || isSetter) && !isComposite;
+		return (isGetter || isSetter) && !isPresented;
 	}
 
 	public boolean hasFieldPath() {
@@ -48,12 +48,12 @@ public class InvocationDefinition {
 		return fieldPath!=null && fieldPath.length>0 ? fieldPath[fieldPath.length-1] : null;
 	}
 
-	public boolean isComposite() {
-		return isComposite;
+	public boolean isPresented() {
+		return isPresented;
 	}
 
 	@SuppressWarnings("rawtypes")
-	public Class<? extends CompositeHandler> getCompositeHandlerClass() {
-		return compositeHandlerClass;
+	public Class<? extends Presenter> getPresenterClass() {
+		return presenterClass;
 	}
 }

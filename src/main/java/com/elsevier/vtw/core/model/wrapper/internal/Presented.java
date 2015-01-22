@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
-public @interface Composite {
-	Class<? extends CompositeHandler> handler();
+public @interface Presented {
+	Class<? extends Presenter> presenter();
 }

@@ -66,7 +66,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 					return createSettingStrategy(property);
 				}
 			}
-			if (definition.isComposite()) {
+			if (definition.isPresented()) {
 				return createCompositeStrategy(object, definition);
 			}
 
@@ -112,9 +112,9 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	
 	
 	@SuppressWarnings("rawtypes")
-	private CompositeHandler createHandler(InvocationDefinition definition) {
+	private Presenter createHandler(InvocationDefinition definition) {
 		try {
-			return (CompositeHandler)(definition.getCompositeHandlerClass().newInstance());
+			return (Presenter)(definition.getPresenterClass().newInstance());
 		} catch (Exception e) {
 			throw new UnsupportedOperationException(e);
 		}
@@ -138,7 +138,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 	private InvocationDefinition buildInvocationDefinition(Method method) {
 		Field fieldAnnotation = getAnnotation(Field.class, method);
 		Normalised normalisedAnnotation = getAnnotation(Normalised.class, method);
-		Composite compositeAnnotation = getAnnotation(Composite.class, method);
+		Presented compositeAnnotation = getAnnotation(Presented.class, method);
 		if(fieldAnnotation !=null || normalisedAnnotation!=null || compositeAnnotation!=null) {
 			InvocationDefinition def = new InvocationDefinition();
 			def.isNormalised = normalisedAnnotation!=null;
@@ -153,8 +153,8 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 				def.propertyType = method.getParameterTypes()[0];
 				def.propertyGenericType = getGenericTypeFrom(method.getGenericParameterTypes()[0]);
 			}
-			def.isComposite = compositeAnnotation != null;
-			def.compositeHandlerClass = compositeAnnotation != null ? compositeAnnotation.handler() : null;
+			def.isPresented = compositeAnnotation != null;
+			def.presenterClass = compositeAnnotation != null ? compositeAnnotation.presenter() : null;
 			return def;
 		}
 		return null;
@@ -283,6 +283,8 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			return new StringProperty(definition.getFieldName(), jsonData);
 		} else if (definition.propertyType.equals(DateTime.class)){
 			return new DateTimeProperty(definition.getFieldName(), jsonData);
+		} else if (definition.propertyType.equals(Integer.class)) {
+			return new IntProperty(definition.getFieldName(), jsonData);
 		} else if (Wrapper.class.isAssignableFrom(definition.propertyType)) {
 			return createWrapperProperty(definition);
 		} else if (definition.propertyType.equals(ArrayWrapper.class)) {

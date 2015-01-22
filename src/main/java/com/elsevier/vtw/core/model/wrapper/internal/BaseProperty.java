@@ -13,8 +13,13 @@ public abstract class BaseProperty implements Property {
 	}
 	
 	protected String asText() {
-		JsonNode field = jsonData.get(fieldName);
+		JsonNode field = asJsonNode();
 		return field!=null ? field.asText() : null;
+	}
+
+	protected JsonNode asJsonNode() {
+		JsonNode field = jsonData.get(fieldName);
+		return field;
 	}
 
 	protected void setAsText(String value) {
