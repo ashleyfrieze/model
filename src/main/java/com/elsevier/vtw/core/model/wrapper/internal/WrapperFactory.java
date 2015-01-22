@@ -14,11 +14,11 @@ public class WrapperFactory {
 	
 	@SuppressWarnings("unchecked")
 	public static<T extends Wrapper> T create(Class<T> type, ObjectNode root) {
-		WrapperInvocationHandler<T> handler = new WrapperInvocationHandler<T>(type, root);
-		return (T)Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, handler);
+		return (T)createUnchecked(type,root);
 	}
 
 	// for internal use only where runtime type information is all that can be used
+	// where the <T extends wrapper> constraint can't be honoured
 	protected static Object createUnchecked(@SuppressWarnings("rawtypes") Class type, ObjectNode root) {
 		WrapperInvocationHandler<Object> handler = new WrapperInvocationHandler<Object>(type, root);
 		return Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, handler);

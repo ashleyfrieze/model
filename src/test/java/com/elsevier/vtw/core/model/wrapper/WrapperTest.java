@@ -307,8 +307,27 @@ public class WrapperTest {
 		assertThat(container.getInteger(), is(123));
 		
 		assertJsonHas(container, "integer", 123);
-		
 	}
+	
+	interface NumberArrayContainer extends Wrapper {
+		@Field
+		ArrayWrapper<Integer> getIntegerArray();
+		void setIntegerArray(ArrayWrapper<Integer> array);
+	}
+	
+	@Test
+	public void readWriteIntegerArray() {
+		NumberArrayContainer container = WrapperFactory.create(NumberArrayContainer.class);
+		ArrayWrapper<Integer> array = new ArrayWrapper<Integer>(Integer.class);
+
+		container.setIntegerArray(array);
+		array.add(123);
+		
+		assertThat(container.getIntegerArray().get(0), is(123));
+		
+		assertJsonHas(container, "integerArray", "[123]");
+	}
+
 	
 	/**
 	 * Quoted value

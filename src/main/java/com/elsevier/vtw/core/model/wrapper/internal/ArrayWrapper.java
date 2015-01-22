@@ -42,6 +42,8 @@ public class ArrayWrapper<T> {
 			// this cast can ONLY work in this situation as
 			// T IS a String
 			return (T)arrayValue.asText();
+		} else if (Integer.class.isAssignableFrom(type)) {
+			return (T)(Integer)arrayValue.asInt();
 		} else if (Wrapper.class.isAssignableFrom(type)) {
 			return (T) WrapperFactory.createUnchecked(type, (ObjectNode)arrayValue);
 		}
@@ -63,6 +65,8 @@ public class ArrayWrapper<T> {
 		if (type.equals(String.class)) {
 			// this cast is context based
 			arrayNode.add((String)value);
+		} else if (Integer.class.isAssignableFrom(type)) {
+			arrayNode.add((Integer)value);
 		} else if (Wrapper.class.isAssignableFrom(type)) {
 			arrayNode.add(((Wrapper)value).json());
 		} else {
