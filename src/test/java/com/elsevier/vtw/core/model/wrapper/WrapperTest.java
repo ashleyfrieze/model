@@ -299,7 +299,7 @@ public class WrapperTest {
 		return parent;
 	}
 	
-	private ObjectNode treeFromJson(String json) throws JsonProcessingException, IOException {
+	static ObjectNode treeFromJson(String json) throws JsonProcessingException, IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode tree = (ObjectNode)mapper.readTree(json);
 		return tree;
