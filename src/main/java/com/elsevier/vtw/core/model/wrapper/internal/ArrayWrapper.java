@@ -1,5 +1,7 @@
 package com.elsevier.vtw.core.model.wrapper.internal;
 
+import org.joda.time.DateTime;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -42,8 +44,12 @@ public class ArrayWrapper<T> {
 			// this cast can ONLY work in this situation as
 			// T IS a String
 			return (T)arrayValue.asText();
+		} else if (DateTime.class.isAssignableFrom(type)) {
+			return (T)new DateTime(arrayValue.asText());
 		} else if (Integer.class.isAssignableFrom(type)) {
 			return (T)(Integer)arrayValue.asInt();
+		} else if (Double.class.isAssignableFrom(type)) {
+			return (T)(Double)arrayValue.asDouble();
 		} else if (Wrapper.class.isAssignableFrom(type)) {
 			return (T) WrapperFactory.createUnchecked(type, (ObjectNode)arrayValue);
 		}
@@ -65,8 +71,12 @@ public class ArrayWrapper<T> {
 		if (type.equals(String.class)) {
 			// this cast is context based
 			arrayNode.add((String)value);
+		} else if (DateTime.class.isAssignableFrom(type)) {
+			arrayNode.add(DateTimeProperty.dateAsText((DateTime)value));
 		} else if (Integer.class.isAssignableFrom(type)) {
 			arrayNode.add((Integer)value);
+		} else if (Double.class.isAssignableFrom(type)) {
+			arrayNode.add((Double)value);
 		} else if (Wrapper.class.isAssignableFrom(type)) {
 			arrayNode.add(((Wrapper)value).json());
 		} else {

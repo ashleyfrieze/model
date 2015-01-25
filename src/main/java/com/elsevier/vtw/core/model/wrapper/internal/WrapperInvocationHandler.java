@@ -285,6 +285,8 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			return new DateTimeProperty(definition.getFieldName(), jsonData);
 		} else if (definition.propertyType.equals(Integer.class)) {
 			return new IntProperty(definition.getFieldName(), jsonData);
+		} else if (definition.propertyType.equals(Double.class)) {
+			return new DoubleProperty(definition.getFieldName(), jsonData);
 		} else if (Wrapper.class.isAssignableFrom(definition.propertyType)) {
 			return createWrapperProperty(definition);
 		} else if (definition.propertyType.equals(ArrayWrapper.class)) {

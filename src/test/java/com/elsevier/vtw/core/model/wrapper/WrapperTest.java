@@ -21,9 +21,15 @@ public class WrapperTest {
 	private static final String TEST_CO_DATE = "2014-11-10T12:10:55Z";
 	private static final DateTime TEST_CO_DATE_TIME = new DateTime(TEST_CO_DATE);
 	
+	interface IdHolder extends Wrapper {
+		@Field("@id")
+		String getId();
+		void setId(String id);
+	}
+	
 	@Test
 	public void writeId() {
-		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
+		IdHolder contentObject = WrapperFactory.create(IdHolder.class);
 		contentObject.setId("myId");
 		
 		assertJsonHasProperty(contentObject,"@id","myId");
@@ -31,7 +37,7 @@ public class WrapperTest {
 
 	@Test
 	public void readWriteId() {
-		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
+		IdHolder contentObject = WrapperFactory.create(IdHolder.class);
 		
 		contentObject.setId("myId");
 		
@@ -40,14 +46,28 @@ public class WrapperTest {
 	
 	@Test
 	public void readNullString() {
-		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
+		IdHolder contentObject = WrapperFactory.create(IdHolder.class);
 		
 		assertNull(contentObject.getId());
 	}
 	
+	interface IdEcmIdTitle extends Wrapper {
+		@Field("@id")
+		String getId();
+		void setId(String id);
+		
+		@Field("ecmId")
+		String getEcmIdentifier();
+		void setEcmIdentifier(String ecm);
+		
+		@Field("title")
+		String getTitle();
+		void setTitle(String title);
+	}
+	
 	@Test
 	public void roundTripSomeValues() {
-		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
+		IdEcmIdTitle contentObject = WrapperFactory.create(IdEcmIdTitle.class);
 		contentObject.setId("myId");
 		contentObject.setEcmIdentifier("ecmID");
 		contentObject.setTitle("title");
@@ -57,9 +77,19 @@ public class WrapperTest {
 		assertThat(contentObject.getTitle(), is("title"));
 	}
 	
+	interface DateHolder extends Wrapper {
+		@Field("date")
+		String getDateAsString();
+		void setDateAsString(String date);
+		
+		@Field("date")
+		DateTime getDate();
+		void setDate(DateTime dateTime);
+	}
+	
 	@Test
 	public void dateAsString() {
-		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
+		DateHolder contentObject = WrapperFactory.create(DateHolder.class);
 		
 		contentObject.setDateAsString(TEST_CO_DATE);
 		assertThat(contentObject.getDateAsString(), is(TEST_CO_DATE));
@@ -67,7 +97,7 @@ public class WrapperTest {
 	
 	@Test
 	public void dateAsDate() {
-		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
+		DateHolder contentObject = WrapperFactory.create(DateHolder.class);
 		
 		contentObject.setDate(TEST_CO_DATE_TIME);
 		assertThat(contentObject.getDate(), is(TEST_CO_DATE_TIME));
@@ -75,30 +105,64 @@ public class WrapperTest {
 	
 	@Test
 	public void canSetDateAsStringAndReadAsDate() {
-		ContentObjectMetadata contentObject = WrapperFactory.create(ContentObjectMetadata.class);
+		DateHolder contentObject = WrapperFactory.create(DateHolder.class);
 		
 		contentObject.setDateAsString(TEST_CO_DATE);
 		assertThat(contentObject.getDate(), is(TEST_CO_DATE_TIME));
 	}
 	
+	interface ArrayOfDatesHolder extends Wrapper {
+		@Field("dateArray")
+		ArrayWrapper<DateTime> getDateArray();
+		void setDateArray(ArrayWrapper<DateTime> dateArray);
+		
+		// the duality of this string-based field means it can be done both ways
+		@Field("dateArray")
+		ArrayWrapper<String> getDateStringArray();
+		void setDateStringArray(ArrayWrapper<String> dateArray);
+	}
+	
+	@Test
+	public void getReadWriteArrayOfDatesAsDateOrString() {
+		ArrayOfDatesHolder holder = WrapperFactory.create(ArrayOfDatesHolder.class);
+		ArrayWrapper<DateTime> dateArray = new ArrayWrapper<>(DateTime.class);
+		
+		holder.setDateArray(dateArray);
+		
+		dateArray.add(TEST_CO_DATE_TIME);
+		
+		assertThat(holder.getDateArray().get(0), is(TEST_CO_DATE_TIME));
+		assertThat(holder.getDateStringArray().get(0), is(TEST_CO_DATE));
+	}
+	
+	interface InferredFields extends Wrapper {
+		@Field
+		String getInferredField();
+		void setInferredField(String value);
+		
+		@Field
+		String getA();
+		void setA(String a);
+	}
+	
 	@Test
 	public void fieldNameCanBeInferred() {
-		AssetMetadata assetMetaData = WrapperFactory.create(AssetMetadata.class);
+		InferredFields inferredFields = WrapperFactory.create(InferredFields.class);
 		
-		assetMetaData.setInferredField("inferred");
-		assertThat(assetMetaData.getInferredField(), is("inferred"));
+		inferredFields.setInferredField("inferred");
+		assertThat(inferredFields.getInferredField(), is("inferred"));
 		
-		assertJsonHasProperty(assetMetaData, "inferredField", "inferred");
+		assertJsonHasProperty(inferredFields, "inferredField", "inferred");
 	}
 	
 	@Test
 	public void fieldNameCanBeInferredOneCharacterName() {
-		AssetMetadata assetMetaData = WrapperFactory.create(AssetMetadata.class);
+		InferredFields inferredFields = WrapperFactory.create(InferredFields.class);
 		
-		assetMetaData.setA("inferred");
-		assertThat(assetMetaData.getA(), is("inferred"));
+		inferredFields.setA("inferred");
+		assertThat(inferredFields.getA(), is("inferred"));
 		
-		assertJsonHasProperty(assetMetaData, "a", "inferred");
+		assertJsonHasProperty(inferredFields, "a", "inferred");
 	}
 	
 	@Test
@@ -297,6 +361,10 @@ public class WrapperTest {
 		@Field
 		Integer getInteger();
 		void setInteger(Integer number);
+		
+		@Field
+		Double getDouble();
+		void setDouble(Double number);
 	}
 	
 	@Test
@@ -309,10 +377,24 @@ public class WrapperTest {
 		assertJsonHas(container, "integer", 123);
 	}
 	
+	@Test
+	public void readWriteDoubleProperty() {
+		NumberContainer container = WrapperFactory.create(NumberContainer.class);
+		container.setDouble(123.45);
+
+		assertThat(container.getDouble(), is(123.45));
+		
+		assertJsonHas(container, "double", 123.45);
+	}
+	
 	interface NumberArrayContainer extends Wrapper {
 		@Field
 		ArrayWrapper<Integer> getIntegerArray();
 		void setIntegerArray(ArrayWrapper<Integer> array);
+		
+		@Field
+		ArrayWrapper<Double> getDoubleArray();
+		void setDoubleArray(ArrayWrapper<Double> array);
 	}
 	
 	@Test
@@ -326,6 +408,19 @@ public class WrapperTest {
 		assertThat(container.getIntegerArray().get(0), is(123));
 		
 		assertJsonHas(container, "integerArray", "[123]");
+	}
+	
+	@Test
+	public void readWriteDoubleArray() {
+		NumberArrayContainer container = WrapperFactory.create(NumberArrayContainer.class);
+		ArrayWrapper<Double> array = new ArrayWrapper<Double>(Double.class);
+
+		container.setDoubleArray(array);
+		array.add(123.45);
+		
+		assertThat(container.getDoubleArray().get(0), is(123.45));
+		
+		assertJsonHas(container, "doubleArray", "[123.45]");
 	}
 
 	
