@@ -48,11 +48,26 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		HandlingStrategy strategy = findInvocationStrategy(object, method);
 		if (strategy!=null) {
 			return strategy.handle(parameters);
-		} if (method.equals(Wrapper.class.getMethod("json"))) {
+		} 
+		
+		if (method.equals(Wrapper.class.getMethod("json"))) {
 			return jsonData;
+		} else if (method.getName().equals("toString")) {
+			return jsonData.toString();
+		} else if (method.getName().equals("equals")) {
+			return wrappersHaveEqualJson(parameters[0]);
+		} else if (method.getName().equals("hashCode")) {
+			return jsonData.hashCode();
 		} else {
 			throw new UnsupportedOperationException("This method cannot be called");
 		}
+	}
+
+	protected boolean wrappersHaveEqualJson(Object other) {
+		if (other instanceof Wrapper) {
+			return jsonData.equals(((Wrapper)other).json());
+		}
+		return false;
 	}
 
 	private HandlingStrategy findInvocationStrategy(Object object, Method method) throws Throwable {

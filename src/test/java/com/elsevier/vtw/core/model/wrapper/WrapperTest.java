@@ -51,6 +51,32 @@ public class WrapperTest {
 		assertNull(contentObject.getId());
 	}
 	
+	@Test
+	public void toStringOutputsAsJson() {
+		IdHolder contentObject = WrapperFactory.create(IdHolder.class);
+		
+		contentObject.setId("myId");
+		assertThat(contentObject.toString(), is("{\"@id\":\"myId\"}"));
+	}
+	
+	@Test
+	public void equalsAndHashCodeViaValueIsPossible() {
+		IdHolder contentObject1 = WrapperFactory.create(IdHolder.class);
+		contentObject1.setId("myId");
+
+		IdHolder contentObject2 = WrapperFactory.create(IdHolder.class);
+		contentObject2.setId("myId");
+
+		IdHolder contentObject3 = WrapperFactory.create(IdHolder.class);
+		contentObject3.setId("hisId");
+		
+		assertEquals(contentObject1, contentObject2);
+		assertNotEquals(contentObject2, contentObject3);
+		
+		assertEquals(contentObject1.hashCode(), contentObject2.hashCode());
+		assertNotEquals(contentObject2.hashCode(), contentObject3.hashCode());
+	}
+	
 	interface IdEcmIdTitle extends Wrapper {
 		@Field("@id")
 		String getId();
