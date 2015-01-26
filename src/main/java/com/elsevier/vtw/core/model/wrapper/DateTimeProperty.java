@@ -1,4 +1,4 @@
-package com.elsevier.vtw.core.model.wrapper.internal;
+package com.elsevier.vtw.core.model.wrapper;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;

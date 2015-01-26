@@ -1,6 +1,6 @@
 package com.elsevier.vtw.core.model.wrapper.teststructures;
 
-import com.elsevier.vtw.core.model.wrapper.internal.Presenter;
+import com.elsevier.vtw.core.model.wrapper.Presenter;
 
 public class FullName implements Presenter<PresentedProperties, String> {
 

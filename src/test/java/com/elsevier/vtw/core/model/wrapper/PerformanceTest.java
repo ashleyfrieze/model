@@ -4,10 +4,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.elsevier.vtw.core.model.wrapper.internal.ArrayWrapper;
-import com.elsevier.vtw.core.model.wrapper.internal.Field;
-import com.elsevier.vtw.core.model.wrapper.internal.Wrapper;
-import com.elsevier.vtw.core.model.wrapper.internal.WrapperFactory;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;

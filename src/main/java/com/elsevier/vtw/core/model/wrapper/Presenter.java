@@ -1,4 +1,4 @@
-package com.elsevier.vtw.core.model.wrapper.internal;
+package com.elsevier.vtw.core.model.wrapper;
 
 public interface Presenter<WRAPPERTYPE, PROPERTYTYPE> {
 	PROPERTYTYPE get(WRAPPERTYPE source);

@@ -1,8 +1,8 @@
 package com.elsevier.vtw.core.model.wrapper.teststructures;
 
-import com.elsevier.vtw.core.model.wrapper.internal.Field;
-import com.elsevier.vtw.core.model.wrapper.internal.Normalised;
-import com.elsevier.vtw.core.model.wrapper.internal.Wrapper;
+import com.elsevier.vtw.core.model.wrapper.Field;
+import com.elsevier.vtw.core.model.wrapper.Normalised;
+import com.elsevier.vtw.core.model.wrapper.Wrapper;
 
 /**
  * Example of how to treat a tuple of properties as though a sub object

@@ -1,4 +1,4 @@
-package com.elsevier.vtw.core.model.wrapper.internal;
+package com.elsevier.vtw.core.model.wrapper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;

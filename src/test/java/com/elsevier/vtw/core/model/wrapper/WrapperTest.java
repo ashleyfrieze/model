@@ -7,10 +7,6 @@ import java.io.IOException;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import com.elsevier.vtw.core.model.wrapper.internal.ArrayWrapper;
-import com.elsevier.vtw.core.model.wrapper.internal.Field;
-import com.elsevier.vtw.core.model.wrapper.internal.Wrapper;
-import com.elsevier.vtw.core.model.wrapper.internal.WrapperFactory;
 import com.elsevier.vtw.core.model.wrapper.teststructures.FirstAndLastName;
 import com.elsevier.vtw.core.model.wrapper.teststructures.FlattenADeepSubObject;
 import com.elsevier.vtw.core.model.wrapper.teststructures.FlattenedPerson;

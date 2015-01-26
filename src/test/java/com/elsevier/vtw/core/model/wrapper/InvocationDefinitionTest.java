@@ -1,4 +1,4 @@
-package com.elsevier.vtw.core.model.wrapper.internal;
+package com.elsevier.vtw.core.model.wrapper;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.*;
 import java.util.Arrays;
 
 import org.junit.Test;
+
+import com.elsevier.vtw.core.model.wrapper.InvocationDefinition;
 
 public class InvocationDefinitionTest {
 	@Test

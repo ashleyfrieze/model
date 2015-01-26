@@ -1,4 +1,4 @@
-package com.elsevier.vtw.core.model.wrapper.internal;
+package com.elsevier.vtw.core.model.wrapper;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
