@@ -1,4 +1,4 @@
-package com.elsevier.vtw.core.model.wrapper;
+package com.elsevier.vtw.core.model.wrapper.teststructures;
 
 import com.elsevier.vtw.core.model.wrapper.internal.Presenter;
 

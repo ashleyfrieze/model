@@ -11,6 +11,11 @@ import com.elsevier.vtw.core.model.wrapper.internal.ArrayWrapper;
 import com.elsevier.vtw.core.model.wrapper.internal.Field;
 import com.elsevier.vtw.core.model.wrapper.internal.Wrapper;
 import com.elsevier.vtw.core.model.wrapper.internal.WrapperFactory;
+import com.elsevier.vtw.core.model.wrapper.teststructures.FirstAndLastName;
+import com.elsevier.vtw.core.model.wrapper.teststructures.FlattenADeepSubObject;
+import com.elsevier.vtw.core.model.wrapper.teststructures.FlattenedPerson;
+import com.elsevier.vtw.core.model.wrapper.teststructures.NormalisedPerson;
+import com.elsevier.vtw.core.model.wrapper.teststructures.PresentedProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -191,42 +196,67 @@ public class WrapperTest {
 		assertJsonHasProperty(inferredFields, "a", "inferred");
 	}
 	
+	interface WithEmbeddedObject extends Wrapper {
+		@Field
+		EmbeddedObject getEmbeddedObject();
+		void setEmbeddedObject(EmbeddedObject embedded);
+	}
+	
+	interface EmbeddedObject extends Wrapper {
+		@Field
+		void setTitle(String title);
+		String getTitle();
+		
+		@Field("@id")
+		void setId(String id);
+	}
+	
 	@Test
 	public void defaultValueOfEmbeddedObjectIsNull() {
-		Parent parent = WrapperFactory.create(Parent.class);
+		WithEmbeddedObject parent = WrapperFactory.create(WithEmbeddedObject.class);
 		
-		assertNull(parent.getAssetMetadata());
+		assertNull(parent.getEmbeddedObject());
 	}
 	
 	@Test
 	public void addEmbeddedObjectToParent() {
-		Parent parent = WrapperFactory.create(Parent.class);
-		parent.setAssetMetadata(WrapperFactory.create(AssetMetadata.class));
+		WithEmbeddedObject parent = WrapperFactory.create(WithEmbeddedObject.class);
+		parent.setEmbeddedObject(WrapperFactory.create(EmbeddedObject.class));
 		
-		assertNotNull(parent.getAssetMetadata());
+		assertNotNull(parent.getEmbeddedObject());
 	}
 	
 	@Test
 	public void addEmbeddedObjectToParentAndRoundtripValuesInIt() {
-		Parent parent = WrapperFactory.create(Parent.class);
-		AssetMetadata asset = WrapperFactory.create(AssetMetadata.class);
-		parent.setAssetMetadata(asset);
+		WithEmbeddedObject parent = WrapperFactory.create(WithEmbeddedObject.class);
+		EmbeddedObject asset = WrapperFactory.create(EmbeddedObject.class);
+		parent.setEmbeddedObject(asset);
 		
 		asset.setTitle("Jingo");
 		asset.setId("assetId");
 		
-		parent.setTitle("Bingo");
-		parent.setId("parentId");
-		
-		assertJsonHasProperty(parent, "dct:title", "Jingo");
+		assertJsonHasProperty(parent, "title", "Jingo");
 		assertJsonHasProperty(parent, "@id", "assetId");
-		assertJsonHasProperty(parent, "dct:title", "Bingo");
-		assertJsonHasProperty(parent, "@id", "parentId");
+	}
+	
+	
+	interface IdAndArrays extends Wrapper {
+		@Field("@id")
+		void setId(String id);
+		String getId();
+		
+		@Field
+		void setStringArray(ArrayWrapper<String> stringArray);
+		ArrayWrapper<String> getStringArray();
+		
+		@Field("embeddedArray")
+		void setEmbeddedObjectArray(ArrayWrapper<EmbeddedObject> array);
+		ArrayWrapper<EmbeddedObject> getEmbeddedObjectArray();
 	}
 	
 	@Test
 	public void readStringArray() throws JsonProcessingException, IOException {
-		Parent parent = createCompoundTestObjectFromJson();
+		IdAndArrays parent = createCompoundTestObjectFromJson();
 		assertThat(parent.getId(), is("myId"));
 		
 		assertThat(parent.getStringArray().size(), is(3));
@@ -237,14 +267,14 @@ public class WrapperTest {
 	
 	@Test
 	public void readNullStringArrayResultsInNullReturn() {
-		Parent parent = WrapperFactory.create(Parent.class);
+		IdAndArrays parent = WrapperFactory.create(IdAndArrays.class);
 		assertNull(parent.getStringArray());
 	}
 	
 	@Test
 	public void canSetStringArrayContents() {
 		// start off with no string array
-		Parent parent = WrapperFactory.create(Parent.class);
+		IdAndArrays parent = WrapperFactory.create(IdAndArrays.class);
 		assertNull(parent.getStringArray());
 		
 		// make a new one
@@ -260,10 +290,11 @@ public class WrapperTest {
 		// and it's in the json
 		assertTrue(parent.json().toString().contains("myString"));
 	}
+
 	
 	@Test
 	public void canWriteStringArrayValues() throws JsonProcessingException, IOException {
-		Parent parent = createCompoundTestObjectFromJson();
+		IdAndArrays parent = createCompoundTestObjectFromJson();
 		
 		assertThat(parent.getStringArray().get(0), is("a"));
 		
@@ -275,28 +306,27 @@ public class WrapperTest {
 	
 	@Test
 	public void attachArrayWithOneObjectIn() {
-		AssetMetadata asset = WrapperFactory.create(AssetMetadata.class);
+		EmbeddedObject asset = WrapperFactory.create(EmbeddedObject.class);
 		asset.setTitle("This is an asset");
 		
-		Parent parent = WrapperFactory.create(Parent.class);
+		IdAndArrays parent = WrapperFactory.create(IdAndArrays.class);
 		
-		ArrayWrapper<AssetMetadata> assetArray = new ArrayWrapper<>(AssetMetadata.class);
+		ArrayWrapper<EmbeddedObject> assetArray = new ArrayWrapper<>(EmbeddedObject.class);
 		assetArray.add(asset);
 		
-		parent.setAssetArray(assetArray);
+		parent.setEmbeddedObjectArray(assetArray);
 		
 		// the json should now contain the title
 		assertTrue(parent.json().toString().contains("is an asset"));
 		
 		// the title should be navigable
-		assertThat(parent.getAssetArray().get(0).getTitle(), is("This is an asset"));
+		assertThat(parent.getEmbeddedObjectArray().get(0).getTitle(), is("This is an asset"));
 	}
 
-	private Parent createCompoundTestObjectFromJson() throws IOException,
+	private IdAndArrays createCompoundTestObjectFromJson() throws IOException,
 			JsonProcessingException {
-		ObjectNode tree = treeFromJson("{\"@id\":\"myId\",\"stringarray\":[\"a\",\"b\",\"c\"]}");		
-		Parent parent = WrapperFactory.create(Parent.class, tree);
-		return parent;
+		ObjectNode tree = treeFromJson("{\"@id\":\"myId\",\"stringArray\":[\"a\",\"b\",\"c\"]}");		
+		return WrapperFactory.create(IdAndArrays.class, tree);
 	}
 	
 	static ObjectNode treeFromJson(String json) throws JsonProcessingException, IOException {
