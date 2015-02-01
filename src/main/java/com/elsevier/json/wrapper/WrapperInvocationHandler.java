@@ -1,6 +1,8 @@
 package com.elsevier.json.wrapper;
 
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -8,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.joda.time.DateTime;
-import org.joda.time.base.AbstractDateTime;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -84,10 +85,36 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			if (definition.isPresented()) {
 				return createCompositeStrategy(object, definition);
 			}
-
+			if (definition.isDefault()) {
+				return createDefaultStrategy(object, method);
+			}
 		}
 		
 		return null;
+	}
+
+	private HandlingStrategy createDefaultStrategy(Object object,
+			Method method) {
+
+		return new HandlingStrategy() {
+			@Override
+			public Object handle(Object[] parameters) {
+				try {
+					// To bypass the access check on calling a default method from a proxy.
+					Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
+							.getDeclaredConstructor(Class.class, int.class);
+					if (!constructor.isAccessible()) {
+						constructor.setAccessible(true);
+					}
+
+					return constructor.newInstance(object.getClass(), MethodHandles.Lookup.PRIVATE)
+							.unreflectSpecial(method, object.getClass()).bindTo(object)
+							.invokeWithArguments(parameters);
+				} catch (Throwable e) {
+					throw new IllegalStateException(e);
+				}
+			}
+		};
 	}
 
 	private HandlingStrategy createCompositeStrategy(Object object,
@@ -154,7 +181,8 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		Field fieldAnnotation = getAnnotation(Field.class, method);
 		Normalised normalisedAnnotation = getAnnotation(Normalised.class, method);
 		Presented compositeAnnotation = getAnnotation(Presented.class, method);
-		if(fieldAnnotation !=null || normalisedAnnotation!=null || compositeAnnotation!=null) {
+		boolean defaultMethod = method.isDefault();
+		if(fieldAnnotation !=null || normalisedAnnotation!=null || compositeAnnotation!=null || defaultMethod) {
 			InvocationDefinition def = new InvocationDefinition();
 			def.isNormalised = normalisedAnnotation!=null;
 			def.fieldPath = jsonFieldPathFrom(fieldAnnotation, method);
@@ -170,6 +198,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			}
 			def.isPresented = compositeAnnotation != null;
 			def.presenterClass = compositeAnnotation != null ? compositeAnnotation.presenter() : null;
+			def.isDefault = defaultMethod;
 			return def;
 		}
 		return null;
@@ -263,8 +292,6 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 		return null;
 	}
 
-
-
 	private HandlingStrategy createGettingStrategy(final Property property) {
 		return new HandlingStrategy() {
 			@Override
@@ -283,7 +310,6 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			}
 		};
 	}
-	
 
 	private Property createProperty(InvocationDefinition definition) {
 		Property property = createPropertyForEndOfPath(definition);

@@ -16,6 +16,7 @@ import com.elsevier.json.wrapper.teststructures.FlattenADeepSubObject;
 import com.elsevier.json.wrapper.teststructures.FlattenedPerson;
 import com.elsevier.json.wrapper.teststructures.NormalisedPerson;
 import com.elsevier.json.wrapper.teststructures.PresentedProperties;
+import com.elsevier.json.wrapper.teststructures.DefaultProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -413,6 +414,26 @@ public class WrapperTest {
 		assertThat(obj.getLastName(), is("Bailey"));
 	}
 	
+	@Test
+	public void defaultPropertyReadFromActualProperties() {
+		DefaultProperties obj = WrapperFactory.create(DefaultProperties.class);
+
+		obj.setFirstName("Bill");
+		obj.setLastName("Bryson");
+
+		assertThat(obj.getFullName(), is("Bill Bryson"));
+	}
+
+	@Test
+	public void defaultPropertyWritesToActualProperties() {
+		PresentedProperties obj = WrapperFactory.create(PresentedProperties.class);
+
+		obj.setFullName("Bill Bailey");
+
+		assertThat(obj.getFirstName(), is("Bill"));
+		assertThat(obj.getLastName(), is("Bailey"));
+	}
+
 	interface NumberContainer extends Wrapper {
 		@Field
 		Integer getInteger();
