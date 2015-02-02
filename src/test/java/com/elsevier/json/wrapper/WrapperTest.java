@@ -426,7 +426,7 @@ public class WrapperTest {
 
 	@Test
 	public void defaultPropertyWritesToActualProperties() {
-		PresentedProperties obj = WrapperFactory.create(PresentedProperties.class);
+		DefaultProperties obj = WrapperFactory.create(DefaultProperties.class);
 
 		obj.setFullName("Bill Bailey");
 
