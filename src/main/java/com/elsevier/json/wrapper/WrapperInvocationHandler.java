@@ -5,10 +5,10 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.joda.time.DateTime;
-import org.joda.time.base.AbstractDateTime;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -201,7 +201,7 @@ public class WrapperInvocationHandler<T> implements InvocationHandler {
 			String propertyName = methodName.substring(SETTER_PREFIX.length());
 			if (propertyName.length()>0) {
 				String firstCharacter = propertyName.substring(0,1);
-				return firstCharacter.toLowerCase() + propertyName.substring(1);
+				return firstCharacter.toLowerCase(Locale.ENGLISH) + propertyName.substring(1);
 			}
 		}
 		return null;
