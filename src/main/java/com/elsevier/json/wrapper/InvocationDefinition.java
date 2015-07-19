@@ -18,6 +18,7 @@ public class InvocationDefinition {
 	boolean isSetter;
 	
 	boolean isPresented;
+	boolean isDefault;
 	
 	// what type and generic type does this invocation trade in for get/set
 	Class<?> propertyType;
@@ -27,7 +28,7 @@ public class InvocationDefinition {
 	Class<? extends Presenter> presenterClass;
 	
 	boolean isProperty() {
-		return (isGetter || isSetter) && !isPresented;
+		return (isGetter || isSetter) && !isPresented && !isDefault;
 	}
 
 	public boolean hasFieldPath() {
@@ -55,5 +56,9 @@ public class InvocationDefinition {
 	@SuppressWarnings("rawtypes")
 	public Class<? extends Presenter> getPresenterClass() {
 		return presenterClass;
+	}
+
+	public boolean isDefault() {
+		return isDefault;
 	}
 }
